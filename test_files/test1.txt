@@ -1,6 +1,19 @@
+*** Settings ***
+Library  String
+
+Force Tags  api
+*** Variables ***
+${HELLO}  hello
+${TEST}
+
 *** Test Cases ***
 1. Test 1.1
   No Operation
 
 2. Test 1.2
+  No Operation
+  key1
+
+*** Keywords ***
+key1
   No Operation
