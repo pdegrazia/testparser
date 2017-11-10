@@ -3,7 +3,7 @@ import glob
 
 from robot.api import TestData
 
-from templates import *
+from templates import JINJA_TEMPLATE
 
 from jinja2 import Template
 
