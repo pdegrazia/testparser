@@ -8,7 +8,10 @@ from templates import JINJA_TEMPLATE
 from jinja2 import Template
 
 
-TESTDIR = '/home/paolo/qa/FeatureTest/suites/regression/'
+TESTDIR = '/home/fernando/git/qa/FeatureTest/suites/regression/'
+# TESTDIR = '/home/fernando/git/testparser/test_files/'
+# TESTDIR = '/home/paolo/qa/FeatureTest/suites/regression/'
+
 FILES_TYPE = '*.txt'
 
 
