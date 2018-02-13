@@ -7,9 +7,8 @@ from templates import JINJA_TEMPLATE
 
 from jinja2 import Template
 
-
+IMAGEDIR = '/home/fernando/git/testparser/images/'
 TESTDIR = '/home/fernando/git/qa/FeatureTest/suites/regression/'
-# TESTDIR = '/home/fernando/git/testparser/test_files/'
 # TESTDIR = '/home/paolo/qa/FeatureTest/suites/regression/'
 
 FILES_TYPE = '*.txt'
@@ -29,9 +28,11 @@ if __name__ == '__main__':
         test_file = TestData(source=suite_location)
         test_suites.append(test_file)
 
+    # print (test_suites[0].setting_table.force_tags.value)
+
     template = Template(JINJA_TEMPLATE)
 
-    output = template.render(test_suites=test_suites)
+    output = template.render(test_suites=test_suites, image_dir=IMAGEDIR)
 
     with open('output.html', 'w') as html_output:
         html_output.write(output.encode('UTF-8'))

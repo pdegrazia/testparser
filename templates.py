@@ -2,19 +2,19 @@ JINJA_TEMPLATE = '''
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" href="mystyle.css">
+        <!--<link rel="stylesheet" type="text/css" href="mystyle.css">-->
         <style>
-            .button-qa-ws {
-                background-color: yellow;
-            }
             .filterDiv {
                 display: none;
                 }
             .show {
-                display: block;
+                display: none;
             }
-            .btn:hover {
-                background-color: #ddd;
+            .tagShow {
+                display: none;
+            }
+            .show.tagShow{
+                display: block;
             }
         </style>
 
@@ -22,53 +22,45 @@ JINJA_TEMPLATE = '''
 
     </head>
     <body>
-        <h1 style="text-align:center;background-color:#EF632F;color:White;font-family:Merriweather"> Regression pack summary </h1>
+        <!--<h1 style="text-align:center;background-color:#EF632F;color:White;font-family:Merriweather"> Regression pack summary </h1>-->
+        <nav class="navbar navbar-light bg-light justify-content-between py-4">
+          <img src="{{image_dir}}Logo-with-strapline_Black-400.png" width="315" height="82" class="d-inline-block align-top" alt="">
+        </nav>
         <div id="myBtnContainer">
-            <button class="btn active" onclick="filterSelection('all')"> Show all</button>
-            <button class="btn" onclick="filterSelection('web')"> FE</button>
-            <button class="btn" onclick="filterSelection('api')"> API</button>
-            <button class="btn" onclick="filterSelection('events')"> EVENTS</button>
+            <div style="float:left;margin-right:100px;margin-left:22px;margin-top:15px;">
+                <button class="btn btn-outline-dark active" onclick="filterSelection('all')"> Show all</button>
+                <button class="btn btn-outline-dark" onclick="filterSelection('web')"> FE</button>
+                <button class="btn btn-outline-dark" onclick="filterSelection('api')"> API</button>
+                <button class="btn btn-outline-dark" onclick="filterSelection('events')"> EVENTS</button>
+            </div>
         </div>
-        <!--
-        <div data-role="main" class="ui-content">
-                <ul>
-                {% for test_suite in test_suites %}
-                    <li data-role="collapsible" style="list-style:none;"><h1>{{ test_suite.name }}</h1>
-                    <ol>
-                    {% for test_case in test_suite.testcase_table %}
-                            <li data-role="collapsible" style="list-style: none;"><h1>{{ test_case.name }}</h1>
-                                <ul>
-                                    {% for test_step in test_case.steps %}
-                                    <li>{{ test_step.name }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                    {% endfor %}
-                    </ol>
-                </li>
-                {% endfor %}
-                </ul>
+        <div class="form-inline" id="searchForm" style="margin-top:15px;">
+            <input class="form-control mr-sm-2" id="submitTag" type="search" placeholder="Search by tag" aria-label="Search">
+            <span class="input-group-btn">
+                <button class="btn btn-dark" style="margin-right:7px;" onclick="tagFilterSelection('clear')" type="button">Clear</button>
+            </span>
+            <button class="btn btn-outline-dark my-2 my-sm-0" onclick="tagFilterSelection()" type="button">Search</button>
         </div>
-        -->
+        <p id="filter-summary" style="margin-top:15px;margin-left:415px;"><b id=numberresults></b> results shown. Current filter: <b id=categoryfilterapplied></b> <b id=tagfilterapplied></b></p>
         <div id="suite-accordion">
-            <ul class="list-group">
+            <ul class="list-group" style="margin-top:15px;">
             {% for test_suite in test_suites %}
             {% set suite_loop = loop %}
-                <div class= "filterDiv {% if "web" in test_suite.setting_table.force_tags.value %}web{% elif "api" in test_suite.setting_table.force_tags.value %}api{% elif "events" in test_suite.setting_table.force_tags.value %}events{% endif %}" style="background-color:#F2F2F2;">
+                <div class= "filterDiv{% for tag in test_suite.setting_table.force_tags.value %} {{tag}}{% endfor %} show tagShow" style="background-color:#F2F2F2;">
                 <li class="list-group-item">
                       <div class="card">
                         <div class="card-header" id="suite-heading-{{suite_loop.index}}">
                           <h5 class="mb-0">
-                            <button class="btn btn-link collapsed" style="color:Black;font-family:Lato;" data-toggle="collapse" data-target="#collapse-{{suite_loop.index}}" aria-expanded="false" aria-controls="collapse-{{suite_loop.index}}">
+                            <button class="btn btn-link collapsed" style="color:Black;font-family:Lato;font-size:20px" data-toggle="collapse" data-target="#collapse-{{suite_loop.index}}" aria-expanded="false" aria-controls="collapse-{{suite_loop.index}}">
                               {{ test_suite.name }}
-                                    {% for tag in test_suite.setting_table.force_tags.value %}
-                                        <span class="badge badge-pill badge-secondary">{{tag}}</span>
-                                    {% endfor %}
                             </button>
+                                {% for tag in test_suite.setting_table.force_tags.value %}
+                                    <span class="btn badge badge-pill badge-secondary" onclick="tagFilterSelection('{{tag}}')";>{{tag}}</span>
+                                {% endfor %}
                           </h5>
                         </div>
 
-                        <div id="collapse-{{suite_loop.index}}" class="collapse" aria-labelledby="suite-heading-{{suite_loop.index}}" data-parent="#suite-accordion">
+                        <div id="collapse-{{suite_loop.index}}" class="collapse" aria-labelledby="suite-heading-{{suite_loop.index}}">
                           <div class="card-body" id="test-accordion">
                             <ol class="list-group">
                                 {% for test_case in test_suite.testcase_table %}
@@ -76,16 +68,16 @@ JINJA_TEMPLATE = '''
                                         <div class="card">
                                             <div class="card-header" id="test-heading-{{suite_loop.index}}-{{loop.index}}">
                                               <h5 class="mb-0">
-                                                <button class="btn btn-link collapsed in" style="color:Black;" data-toggle="collapse" data-target="#test-collapse-{{suite_loop.index}}-{{loop.index}}" aria-expanded="false" aria-controls="test-collapse-{{suite_loop.index}}-{{loop.index}}">
+                                                <button class="btn btn-link collapsed in" style="color:Black;font-size:19px;" data-toggle="collapse" data-target="#test-collapse-{{suite_loop.index}}-{{loop.index}}" aria-expanded="false" aria-controls="test-collapse-{{suite_loop.index}}-{{loop.index}}">
                                                   {{ test_case.name }}
                                                 </button>
                                               </h5>
                                             </div>
-                                            <div id="test-collapse-{{suite_loop.index}}-{{loop.index}}" class="collapse" aria-labelledby="test-heading-{{suite_loop.index}}-{{loop.index}}" data-parent="#test-accordion">
+                                            <div id="test-collapse-{{suite_loop.index}}-{{loop.index}}" class="collapse" aria-labelledby="test-heading-{{suite_loop.index}}-{{loop.index}}">
                                                 <div class="card-body">
                                                     <ul class="list-group">
                                                         {% for test_step in test_case.steps %}
-                                                            <li>{{ test_step.name }}</li>
+                                                            <li style="font-size:18px;">{{ test_step.name }}</li>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
@@ -106,37 +98,83 @@ JINJA_TEMPLATE = '''
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
         <script>
-            filterSelection("all")
+
+            showResults();
+
             function filterSelection(c) {
-              var x, i;
-              x = document.getElementsByClassName("filterDiv");
-              if (c == "all") c = "";
-              for (i = 0; i < x.length; i++) {
-                w3RemoveClass(x[i], "show");
-                if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
-              }
+                console.log("filterSelection")
+                var x, i;
+                x = document.getElementsByClassName('filterDiv');
+                if (c == "all") c = "";
+                for (i = 0; i < x.length; i++) {
+                    w3RemoveClass(x[i], "show");
+                    if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
+                }
+                document.getElementById('categoryfilterapplied').innerHTML = c;
+                showResults()
             }
 
             function w3AddClass(element, name) {
-              var i, arr1, arr2;
-              arr1 = element.className.split(" ");
-              arr2 = name.split(" ");
-              for (i = 0; i < arr2.length; i++) {
-                if (arr1.indexOf(arr2[i]) == -1) {element.className += " " + arr2[i];}
-              }
+                var i, arr1, arr2;
+                arr1 = element.className.split(" ");
+                arr2 = name.split(" ");
+                for (i = 0; i < arr2.length; i++) {
+                    if (arr1.indexOf(arr2[i]) == -1) {element.className += " " + arr2[i];}
+                }
             }
 
             function w3RemoveClass(element, name) {
-              var i, arr1, arr2;
-              arr1 = element.className.split(" ");
-              arr2 = name.split(" ");
-              for (i = 0; i < arr2.length; i++) {
-                while (arr1.indexOf(arr2[i]) > -1) {
-                  arr1.splice(arr1.indexOf(arr2[i]), 1);
+                var i, arr1, arr2;
+                arr1 = element.className.split(" ");
+                arr2 = name.split(" ");
+                for (i = 0; i < arr2.length; i++) {
+                   while (arr1.indexOf(arr2[i]) > -1) {
+                      arr1.splice(arr1.indexOf(arr2[i]), 1);
+                   }
                 }
-              }
-              element.className = arr1.join(" ");
+                element.className = arr1.join(" ");
             }
+
+            function showResults(){
+                var matches, total = 0;
+                matches = document.getElementsByClassName("show tagShow").length;
+                document.getElementById('numberresults').innerHTML = matches;
+                //total = document.getElementsByClassName("filterDiv").length;
+                //if (matches == total) {}
+            }
+
+            function tagFilterSelection(filter = 'searchbox') {
+                var x, i;
+                x = document.getElementsByClassName('filterDiv');
+                if (filter == "clear") {
+                    console.log("Clearing")
+                    var input = "";
+                    $("#submitTag").val("");
+                } else if (filter == "searchbox") {
+                    var input = document.getElementById("submitTag").value;
+                } else {
+                    var input = filter;
+                    document.getElementById('submitTag').value = input;
+                }
+                console.log("tagFilterSelection()")
+                for (i = 0; i < x.length; i++) {
+                    console.log(i)
+                    console.log(x[i].className.indexOf(input))
+                    w3RemoveClass(x[i], "tagShow");
+                    if (x[i].className.indexOf(input) > -1) {w3AddClass(x[i], "tagShow"); console.log(x[i]);}
+                }
+                document.getElementById('tagfilterapplied').innerHTML = input;
+                showResults()
+            }
+
+            var tagFilter = document.getElementById("searchForm");
+            tagFilter.addEventListener("keydown", function (e) {
+                if (e.keyCode === 13) {
+                    console.log("it works")
+                    tagFilterSelection();
+                }
+
+            });
 
             var btnContainer = document.getElementById("myBtnContainer");
             var btns = btnContainer.getElementsByClassName("btn");
@@ -147,8 +185,8 @@ JINJA_TEMPLATE = '''
                 this.className += " active";
               });
             }
-        </script>
 
+        </script>
     </body>
 </html>
 '''
