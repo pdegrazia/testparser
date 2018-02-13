@@ -24,7 +24,7 @@ JINJA_TEMPLATE = '''
     <body>
         <!--<h1 style="text-align:center;background-color:#EF632F;color:White;font-family:Merriweather"> Regression pack summary </h1>-->
         <nav class="navbar navbar-light bg-light justify-content-between py-4">
-          <img src="{{image_dir}}Logo-with-strapline_Black-400.png" width="315" height="82" class="d-inline-block align-top" alt="">
+          <img src="{{image_path}}" width="315" height="82" class="d-inline-block align-top" alt="">
         </nav>
         <div id="myBtnContainer">
             <div style="float:left;margin-right:100px;margin-left:22px;margin-top:15px;">
@@ -35,13 +35,24 @@ JINJA_TEMPLATE = '''
             </div>
         </div>
         <div class="form-inline" id="searchForm" style="margin-top:15px;">
-            <input class="form-control mr-sm-2" id="submitTag" type="search" placeholder="Search by tag" aria-label="Search">
-            <span class="input-group-btn">
-                <button class="btn btn-dark" style="margin-right:7px;" onclick="tagFilterSelection('clear')" type="button">Clear</button>
-            </span>
-            <button class="btn btn-outline-dark my-2 my-sm-0" onclick="tagFilterSelection()" type="button">Search</button>
+            <div>
+                <input class="form-control" id="submitTag" type="search" placeholder="Search by tag" aria-label="Search">
+                <span class="input-group-btn">
+                    <button class="btn btn-dark" onclick="tagFilterSelection('clear')" type="button">Clear</button>
+                </span>
+                <button class="btn btn-outline-dark my-2 my-sm-0" onclick="tagFilterSelection()" style="margin-right:100px;" type="button">Search</button>
+            </div>
+            <span id="addfilter" class="btn btn-outline-dark" onclick="showExtraFilter()">Add extra filter</span>
+            <div id="extrafilter" style="display:none;">
+                <input class="form-control" id="submitTag2" type="search" placeholder="Search by additional tag" aria-label="Search">
+                <span class="input-group-btn">
+                    <button class="btn btn-dark" onclick="tagFilterSelection('clear')" type="button">Clear</button>
+                </span>
+                <button class="btn btn-outline-dark my-2 my-sm-0" onclick="tagFilterSelection()" style="margin-right:100px;" type="button">Search</button>
+            </div>
+            <span id="removefilter" class="btn btn-outline-dark" style="display:none;" onclick="hideExtraFilter()">Remove extra filter</span>
         </div>
-        <p id="filter-summary" style="margin-top:15px;margin-left:415px;"><b id=numberresults></b> results shown. Current filter: <b id=categoryfilterapplied></b> <b id=tagfilterapplied></b></p>
+        <p id="filter-summary" style="margin-top:15px;margin-left:415px;"><b id=numberresults></b> results shown. Searching by: <b id=categoryfilterapplied></b> <b id=tagfilterapplied></b></p>
         <div id="suite-accordion">
             <ul class="list-group" style="margin-top:15px;">
             {% for test_suite in test_suites %}
@@ -165,6 +176,18 @@ JINJA_TEMPLATE = '''
                 }
                 document.getElementById('tagfilterapplied').innerHTML = input;
                 showResults()
+            }
+
+            function showExtraFilter() {
+                document.getElementById("addfilter").style.display = "none";
+                document.getElementById("extrafilter").style.display = "block";
+                document.getElementById("removefilter").style.display = "block";
+            }
+
+            function hideExtraFilter() {
+                document.getElementById("removefilter").style.display = "none";
+                document.getElementById("extrafilter").style.display = "none";
+                document.getElementById("addfilter").style.display = "block";
             }
 
             var tagFilter = document.getElementById("searchForm");

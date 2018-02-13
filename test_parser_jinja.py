@@ -7,8 +7,9 @@ from templates import JINJA_TEMPLATE
 
 from jinja2 import Template
 
-IMAGEDIR = '/home/fernando/git/testparser/images/'
-TESTDIR = '/home/fernando/git/qa/FeatureTest/suites/regression/'
+IMAGEPATH = '/home/fernando/git/testparser/images/Logo-with-strapline_Black-400.png'
+# IMAGEPATH = './images/Logo-with-strapline_Black-400.png'
+TESTDIR = '/home/fernando/git/qa/FeatureTest/suites/regressiontest/'
 # TESTDIR = '/home/paolo/qa/FeatureTest/suites/regression/'
 
 FILES_TYPE = '*.txt'
@@ -32,7 +33,7 @@ if __name__ == '__main__':
 
     template = Template(JINJA_TEMPLATE)
 
-    output = template.render(test_suites=test_suites, image_dir=IMAGEDIR)
+    output = template.render(test_suites=test_suites, image_path=IMAGEPATH)
 
     with open('output.html', 'w') as html_output:
         html_output.write(output.encode('UTF-8'))
