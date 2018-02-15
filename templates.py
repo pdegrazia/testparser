@@ -24,7 +24,6 @@ JINJA_TEMPLATE = '''
 
     </head>
     <body>
-        <!--<h1 style="text-align:center;background-color:#F2F2F2;color:White;font-family:Merriweather"> Regression pack summary </h1>-->
         <nav class="navbar bg-light navbar-light justify-content-between py-4">
           <img src="{{image_path}}" width="315" height="82" class="d-inline-block align-top" alt="">
         </nav>
