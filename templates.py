@@ -61,7 +61,7 @@ JINJA_TEMPLATE = '''
             <ul class="list-group list-group-flush" style="margin-top:15px;">
             {% for test_suite in test_suites %}
             {% set suite_loop = loop %}
-                <div class= "filterDiv{% for tag in test_suite.setting_table.force_tags.value %} {{tag}}{% endfor %} show tagShow extraTagShow" style="background-color:#F2F2F2;">
+                <div class= "filterDiv{% for tag in test_suite.setting_table.force_tags.value %} {{tag.lower()}}{% endfor %} show tagShow extraTagShow" style="background-color:#F2F2F2;">
                 <li class="list-group-item">
                       <div class="card">
                         <div class="card-header" id="suite-heading-{{suite_loop.index}}">
@@ -92,7 +92,7 @@ JINJA_TEMPLATE = '''
                                                 <div class="card-body">
                                                     <ul class="list-group list-group-flush">
                                                         {% for test_step in test_case.steps %}
-                                                            <li style="font-size:18px;">{{ test_step.name }}</li>
+                                                            <div class="keyword" style="font-size:18px;">{{ test_step.name }}</div>
                                                         {% endfor %}
                                                     </ul>
                                                 </div>
@@ -118,58 +118,28 @@ JINJA_TEMPLATE = '''
 
             function filterSelection(c) {
                 var x, i;
-                x = document.getElementsByClassName('filterDiv');
-                if (c == "all") c = "";
-                for (i = 0; i < x.length; i++) {
-                    RemoveClass(x[i], "show");
-                    if (x[i].className.indexOf(c) > -1) AddClass(x[i], "show");
-                }
-                document.getElementById('categoryfilterapplied').innerHTML = c;
+                $('.filterDiv').removeClass("show");
+                if (c == "all") {$('.filterDiv').addClass("show"); c="";}
+                else $('.filterDiv.'+c).addClass("show");
+                $("#categoryfilterapplied").html(c);
                 showResults()
             }
 
-            function AddClass(element, name) {
-                var i, arr1, arr2;
-                arr1 = element.className.split(" ");
-                arr2 = name.split(" ");
-                for (i = 0; i < arr2.length; i++) {
-                    if (arr1.indexOf(arr2[i]) == -1) {element.className += " " + arr2[i];}
-                }
-            }
-
-            function RemoveClass(element, name) {
-                var i, arr1, arr2;
-                arr1 = element.className.split(" ");
-                arr2 = name.split(" ");
-                for (i = 0; i < arr2.length; i++) {
-                   while (arr1.indexOf(arr2[i]) > -1) {
-                      arr1.splice(arr1.indexOf(arr2[i]), 1);
-                   }
-                }
-                element.className = arr1.join(" ");
-            }
-
             function showResults(){
-                var matches, total = 0;
-                matches = document.getElementsByClassName("show tagShow extraTagShow").length;
-                document.getElementById('numberresults').innerHTML = matches;
-                //total = document.getElementsByClassName("filterDiv").length;
-                //if (matches == total) {}
+                var matches;
+                matches = $('.show.tagShow.extraTagShow').length
+                $("#numberresults").html(matches);
             }
 
             function tagFilterSelection(filter = 'searchbox', tag = 'tagShow') {
-                var id, input, filterresult, x, i;
-                x = document.getElementsByClassName('filterDiv');
+                var id, input, filterresult;
+                $('.filterDiv').removeClass(tag);
                 if (filter == "clear") {
-                    input = "";
-                    if (tag == "tagShow") {
-                        $("#submitTag").val("");
-                        document.getElementById('tagfilterapplied').innerHTML = input;
-                    } else if (tag == "extraTagShow") {
-                        $("#submitTag2").val("");
-                        document.getElementById('extratagfilterapplied').innerHTML = input;
-                    }
-                } else if (filter == "searchbox") {
+                    $('.filterDiv').addClass(tag);
+                    if (tag == "tagShow") {$("#tagfilterapplied").html("");}
+                    else if (tag == "extraTagShow") {$("#extratagfilterapplied").html("");}
+                }
+                else if (filter == "searchbox") {
                     if (tag == "tagShow") {
                         id = 'submitTag';
                         filterresult = "tagfilterapplied";
@@ -179,19 +149,17 @@ JINJA_TEMPLATE = '''
                         filterresult = "extratagfilterapplied";
                     }
                     input = document.getElementById(id).value;
-                    document.getElementById(filterresult).innerHTML = input;
-                } else {
-                    input = filter;
-                    id = "submitTag"
-                    document.getElementById('tagfilterapplied').innerHTML = input;
-                    //document.getElementById('submitTag').value = input;
+                    $('.filterDiv.'+input).addClass(tag);
+                    $("#"+filterresult).html(input);
                 }
-                for (i = 0; i < x.length; i++) {
-                    RemoveClass(x[i], tag);
-                    if (x[i].className.indexOf(input) > -1) {AddClass(x[i], tag);}
+                else {
+                    $('.filterDiv.'+filter).addClass("tagShow");
+                    $("#tagfilterapplied").html(filter);
+                    document.getElementById('tagfilterapplied').innerHTML = filter;
                 }
-                document.getElementById('submitTag').value = "";
-                document.getElementById('submitTag2').value = "";
+
+                $("#submitTag").val("");
+                $("#submitTag2").val("");
                 showResults()
             }
 
@@ -207,6 +175,22 @@ JINJA_TEMPLATE = '''
                 document.getElementById("addfilter").style.display = "block";
                 tagFilterSelection('clear', 'extraTagShow')
             }
+
+            $.fn.wrapInTag = function(opts) {
+              var tag = opts.tag || 'strong',
+                  words = opts.words || [],
+                  regex = RegExp(words.join('|'), 'gi'),
+                  replacement = '<'+ tag +'>$&</'+ tag +'>';
+
+              return this.html(function() {
+                return $(this).text().replace(regex, replacement);
+              });
+            };
+
+            $('.keyword').wrapInTag({
+              tag: 'strong',
+              words: ['Given', 'When', 'Then', 'And']
+            });
 
             var tagFilter = document.getElementById("searchForm");
             tagFilter.addEventListener("keydown", function (e) {
