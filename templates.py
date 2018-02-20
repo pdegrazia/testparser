@@ -2,7 +2,23 @@ JINJA_TEMPLATE = '''
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" href="styles/style.css">
+        <style>
+            .filterDiv {
+                display: none;
+                }
+            .show {
+                display: none;
+            }
+            .tagShow {
+                display: none;
+            }
+            .extraTagShow {
+                display: none;
+            }
+            .show.tagShow.extraTagShow{
+                display: block;
+            }
+        </style>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     </head>
     <body>
@@ -21,29 +37,32 @@ JINJA_TEMPLATE = '''
             <div class="form-inline" id="searchForm" style="margin-top:15px;">
                 <div>
                     <input class="form-control" id="submitTag" type="search" placeholder="Search by tag" aria-label="Search">
+                    <button class="btn btn-dark" onclick="tagFilterSelection()" type="button">Search</button>
                     <span class="input-group-btn">
-                        <button class="btn btn-dark" onclick="tagFilterSelection('clear')" type="button">Clear</button>
+                        <button class="btn btn-outline-dark" onclick="tagFilterSelection('clear')" style="margin-right:60px;" type="button">Clear</button>
                     </span>
-                    <button class="btn btn-outline-dark" onclick="tagFilterSelection()" style="margin-right:60px;" type="button">Search</button>
                 </div>
                 <span id="addfilter" class="btn btn-outline-dark" onclick="showExtraFilter()">Add extra filter</span>
                 <div id="extrafilter" style="display:none;">
                     <input class="form-control" id="submitTag2" type="search" placeholder="Search by additional tag" aria-label="Search">
+                    <button class="btn btn-dark my-2 my-sm-0" onclick="tagFilterSelection('searchbox', 'extraTagShow')" type="button">Search</button>
                     <span class="input-group-btn">
-                        <button class="btn btn-dark" onclick="tagFilterSelection('clear', 'extraTagShow')" type="button">Clear</button>
+                        <button class="btn btn-outline-dark" onclick="tagFilterSelection('clear', 'extraTagShow')" style="margin-right:60px;" type="button">Clear</button>
                     </span>
-                    <button class="btn btn-outline-dark my-2 my-sm-0" onclick="tagFilterSelection('searchbox', 'extraTagShow')" style="margin-right:60px;" type="button">Search</button>
                 </div>
                 <span id="removefilter" class="btn btn-outline-dark" style="display:none;" onclick="hideExtraFilter();">Remove extra filter</span>
             </div>
-            <p id="filter-summary" style="margin-top:15px;margin-left:375px;"><b id=numberresults></b> results shown. Searching by: <b id=categoryfilterapplied></b> <b id=tagfilterapplied></b> <b id=extratagfilterapplied></b></p>
+            <div style="margin-top:15px;">
+                <span id="filter-summary" style="margin-left:375px;" align="left"><b id=numberresults></b> results shown. Searching by: <b id=categoryfilterapplied></b> <b id=tagfilterapplied></b> <b id=extratagfilterapplied></b></span>
+                <span id="last-execution" style="margin-right:20px;float:right;">Last generated at <b>{{last_execution[1]}}</b> on <b>{{last_execution[0]}}</b></span>
+            </div>
         </div>
         <div id="suite-accordion">
             <ul class="list-group list-group-flush" style="margin-top:15px;">
             {% for test_suite in test_suites %}
             {% set suite_loop = loop %}
                 <div class= "filterDiv{% for tag in test_suite.setting_table.force_tags.value %} {{tag.lower()}}{% endfor %} show tagShow extraTagShow" style="background-color:#F2F2F2;">
-                <li class="list-group-item">
+                <li class="list-group-item" style="padding: .25rem 1.25rem;">
                       <div class="card">
                         <div class="card-header" id="suite-heading-{{suite_loop.index}}">
                           <h5 class="mb-0">
@@ -60,7 +79,7 @@ JINJA_TEMPLATE = '''
                           <div class="card-body" id="test-accordion">
                             <ol class="list-group list-group-flush">
                                 {% for test_case in test_suite.testcase_table %}
-                                    <li class="list-group-item" style="border:none;">
+                                    <li class="list-group-item" style="border:none;padding: .25rem .75rem;">
                                         <div class="card">
                                             <div class="card-header" id="test-heading-{{suite_loop.index}}-{{loop.index}}">
                                               <h5 class="mb-0">
@@ -90,7 +109,109 @@ JINJA_TEMPLATE = '''
             {% endfor %}
             </ul>
         </div>
-        <script src="scripts/main.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script>
+
+            showResults();
+
+
+            function filterSelection(c) {
+                var x, i;
+                $('.filterDiv').removeClass("show");
+                if (c == "all") {$('.filterDiv').addClass("show"); c="";}
+                else $('.filterDiv.'+c).addClass("show");
+                $("#categoryfilterapplied").html(c);
+                showResults()
+            }
+
+            function showResults(){
+                var matches;
+                matches = $('.show.tagShow.extraTagShow').length
+                $("#numberresults").html(matches);
+            }
+
+            function tagFilterSelection(filter = 'searchbox', tag = 'tagShow') {
+                var id, input, filterresult;
+                $('.filterDiv').removeClass(tag);
+                if (filter == "clear") {
+                    $('.filterDiv').addClass(tag);
+                    if (tag == "tagShow") {$("#tagfilterapplied").html("");}
+                    else if (tag == "extraTagShow") {$("#extratagfilterapplied").html("");}
+                }
+                else if (filter == "searchbox") {
+                    if (tag == "tagShow") {
+                        id = 'submitTag';
+                        filterresult = "tagfilterapplied";
+                    }
+                    else if (tag == "extraTagShow") {
+                        id = 'submitTag2';
+                        filterresult = "extratagfilterapplied";
+                    }
+                    input = document.getElementById(id).value;
+                    $('.filterDiv.'+input).addClass(tag);
+                    $("#"+filterresult).html(input);
+                }
+                else {
+                    $('.filterDiv.'+filter).addClass("tagShow");
+                    $("#tagfilterapplied").html(filter);
+                    document.getElementById('tagfilterapplied').innerHTML = filter;
+                }
+
+                $("#submitTag").val("");
+                $("#submitTag2").val("");
+                showResults()
+            }
+
+            function showExtraFilter() {
+                document.getElementById("addfilter").style.display = "none";
+                document.getElementById("extrafilter").style.display = "block";
+                document.getElementById("removefilter").style.display = "block";
+            }
+
+            function hideExtraFilter() {
+                document.getElementById("removefilter").style.display = "none";
+                document.getElementById("extrafilter").style.display = "none";
+                document.getElementById("addfilter").style.display = "block";
+                tagFilterSelection('clear', 'extraTagShow')
+            }
+
+            $.fn.wrapInTag = function(opts) {
+              var tag = opts.tag || 'strong',
+                  words = opts.words || [],
+                  regex = RegExp(words.join('|'), 'gi'),
+                  replacement = '<'+ tag +'>$&</'+ tag +'>';
+
+              return this.html(function() {
+                return $(this).text().replace(regex, replacement);
+              });
+            };
+
+            $('.keyword').wrapInTag({
+              tag: 'strong',
+              words: ['Given', 'When', 'Then', 'And']
+            });
+
+            var tagFilter = document.getElementById("searchForm");
+            tagFilter.addEventListener("keydown", function (e) {
+                if (e.keyCode === 13) {
+                    tagFilterSelection();
+                }
+
+            });
+
+            var btnContainer = document.getElementById("myBtnContainer");
+            var btns = btnContainer.getElementsByClassName("btn");
+            for (var i = 0; i < btns.length; i++) {
+              btns[i].addEventListener("click", function(){
+                var current = document.getElementsByClassName("active");
+                current[0].className = current[0].className.replace(" active", "");
+                this.className += " active";
+              });
+            }
+
+        </script>
     </body>
 </html>
 '''
